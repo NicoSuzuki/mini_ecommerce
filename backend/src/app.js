@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const healthRoutes = require('./routes/health.routes');
 const dbCheckRoutes = require('./routes/dbcheck.routes')
+const authRoutes = require('./routes/auth.routes')
 
 const app = express();
 
@@ -12,6 +13,14 @@ app.use(express.json());
 // Routes
 app.use('/api/v1', healthRoutes);
 app.use('/api/v1', dbCheckRoutes);
+app.use('/api/v1/auth', authRoutes);
+
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
+  next(err);
+});
 
 // 404
 app.use((req, res) => {
@@ -20,8 +29,9 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
+  console.error("Unhandled error:", err);
+  const status = err.status || 500;
+  res.status(status).json({ error: err.message || "Internal Server Error" });
 });
 
 
