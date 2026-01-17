@@ -84,13 +84,41 @@ These files will create the database schema and insert sample data.
 
 ------------------------------------------------------------------------
 
-## 🔌 API Endpoints (current)
+## 🔌 API Endpoints
 
--   `GET /api/v1/health` -- Health check
--   `GET /api/v1/db-check` -- Database connection check
+### Public
+- `GET /api/v1/health`
+- `GET /api/v1/db-check`
+- `GET /api/v1/products`
+- `GET /api/v1/products/:id`
 
-More endpoints (products, cart, orders, authentication) will be added
+### Auth
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+
+### Admin (JWT + role = admin)
+- `POST /api/v1/products`
+- `PUT /api/v1/products/:id`
+- `DELETE /api/v1/products/:id`
+- `PUT /api/v1/products/:id/restore`
+
+
+More endpoints (cart, orders) will be added
 progressively.
+
+------------------------------------------------------------------------
+
+## 🖥 Frontend (current)
+
+Implemented:
+- Register / Login pages
+- Products listing (consumes the API)
+- Admin-only Create Product page (JWT + role-based access)
+
+Next:
+- Product detail page
+- Shopping cart (localStorage)
+- Checkout & orders
 
 ------------------------------------------------------------------------
 
@@ -98,8 +126,7 @@ progressively.
 
 🚧 Work in progress
 
-Planned features: - Products API - Product listing in frontend -
-Shopping cart - Checkout & orders - Authentication and admin panel
+Planned features: -Shopping cart - Checkout & orders - Admin panel
 
 ------------------------------------------------------------------------
 
