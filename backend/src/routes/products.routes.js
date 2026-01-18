@@ -7,6 +7,9 @@ const { authenticateToken, authorizeRole } = require('../middlewares/auth.middle
 // GET /api/v1/products
 router.get('/', productsController.getAllProducts);
 
+// GET /api/v1/products/deleted
+router.get('/deleted', authenticateToken, authorizeRole('admin'), productsController.getDeletedProducts);
+
 // GET /api/v1/products/:id
 router.get('/:id', productsController.getProductById);
 

@@ -16,3 +16,19 @@ export function getProductById(id) {
 export function createProduct(payload) {
   return apiRequest("/products", { method: "POST", body: payload });
 }
+
+export function updateProduct(id, payload) {
+  return apiRequest(`/products/${id}`, { method: "PUT", body: payload });
+}
+
+export function deleteProduct(id) {
+  return apiRequest(`/products/${id}`, { method: "DELETE" });
+}
+
+export function restoreProduct(id) {
+  return apiRequest(`/products/${id}/restore`, { method: "PUT" });
+}
+
+export function getDeletedProducts() {
+  return apiRequest("/products/deleted");
+}

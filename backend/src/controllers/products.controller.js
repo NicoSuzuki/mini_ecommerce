@@ -275,3 +275,18 @@ exports.restoreProduct = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// GET /api/v1/products/deleted (admin)
+exports.getDeletedProducts = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id_product, name, price_cents, currency, stock, image_url, updated_at
+       FROM products
+       WHERE is_active = 0
+       ORDER BY updated_at DESC`
+    );
+    return res.status(200).json({ data: rows });
+  } catch (e) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};

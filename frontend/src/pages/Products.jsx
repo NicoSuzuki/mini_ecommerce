@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../services/productsService";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Products() {
   const { user, logout } = useAuth();
@@ -35,7 +36,9 @@ export default function Products() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginTop: 16 }}>
         {items.map((p) => (
           <div key={p.id_product} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
-            <strong>{p.name}</strong>
+            <strong>
+              <Link to={`/products/${p.id_product}`}>{p.name}</Link>
+            </strong>
             <p style={{ margin: "8px 0" }}>{p.description || "No description"}</p>
             <div>Price: {p.price_cents} {p.currency}</div>
             <div>Stock: {p.stock}</div>
