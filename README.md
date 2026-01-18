@@ -101,10 +101,21 @@ These files will create the database schema and insert sample data.
 - `PUT /api/v1/products/:id`
 - `DELETE /api/v1/products/:id`
 - `PUT /api/v1/products/:id/restore`
+- `GET /api/v1/products/deleted` (trash list)
 
 
 More endpoints (cart, orders) will be added
 progressively.
+
+------------------------------------------------------------------------
+
+## 🧭 Frontend Routes (current)
+
+- `/products` – Products list
+- `/products/:id` – Product detail
+- `/cart` – Cart (localStorage)
+- `/login` – Login
+- `/register` – Register
 
 ------------------------------------------------------------------------
 
@@ -114,10 +125,10 @@ Implemented:
 - Register / Login pages
 - Products listing (consumes the API)
 - Admin-only Create Product page (JWT + role-based access)
-
-Next:
 - Product detail page
 - Shopping cart (localStorage)
+
+Next:
 - Checkout & orders
 
 ------------------------------------------------------------------------
@@ -126,7 +137,16 @@ Next:
 
 🚧 Work in progress
 
-Planned features: -Shopping cart - Checkout & orders - Admin panel
+------------------------------------------------------------------------
+
+## 🗺 Roadmap
+
+Next features:
+- Checkout flow
+- Create orders from cart
+- Order history (user)
+- Improve UI/UX styling
+
 
 ------------------------------------------------------------------------
 
