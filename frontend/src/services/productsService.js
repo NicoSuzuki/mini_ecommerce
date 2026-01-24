@@ -12,7 +12,7 @@ export function getProductById(id) {
   return apiRequest(`/products/${id}`);
 }
 
-// Admin 
+// Admin
 export function createProduct(payload) {
   return apiRequest("/products", { method: "POST", body: payload });
 }

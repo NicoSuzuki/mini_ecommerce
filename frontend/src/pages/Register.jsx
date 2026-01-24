@@ -29,11 +29,31 @@ export default function Register() {
       <h2>Register</h2>
       {err && <p style={{ color: "crimson" }}>{err}</p>}
       {ok && <p style={{ color: "green" }}>{ok}</p>}
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 10, maxWidth: 320 }}>
-        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" />
-        <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
+      <form
+        onSubmit={onSubmit}
+        style={{ display: "grid", gap: 10, maxWidth: 320 }}
+      >
+        <input
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder="First name"
+        />
+        <input
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          placeholder="Last name"
+        />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+        />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          type="password"
+        />
         <button type="submit">Create account</button>
       </form>
       <p>

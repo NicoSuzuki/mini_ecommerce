@@ -25,9 +25,21 @@ export default function Login() {
     <div style={{ padding: 20 }}>
       <h2>Login</h2>
       {err && <p style={{ color: "crimson" }}>{err}</p>}
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 10, maxWidth: 320 }}>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
+      <form
+        onSubmit={onSubmit}
+        style={{ display: "grid", gap: 10, maxWidth: 320 }}
+      >
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+        />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          type="password"
+        />
         <button type="submit">Login</button>
       </form>
       <p>

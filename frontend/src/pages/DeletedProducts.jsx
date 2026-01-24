@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { getDeletedProducts, restoreProduct } from "../services/productsService";
+import {
+  getDeletedProducts,
+  restoreProduct,
+} from "../services/productsService";
 
 export default function DeletedProducts() {
   const [items, setItems] = useState([]);
@@ -29,7 +32,10 @@ export default function DeletedProducts() {
       ) : (
         <div style={{ display: "grid", gap: 10 }}>
           {items.map((p) => (
-            <div key={p.id_product} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+            <div
+              key={p.id_product}
+              style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}
+            >
               <strong>{p.name}</strong>
               <div>
                 Price: {p.price_cents} {p.currency} | Stock: {p.stock}

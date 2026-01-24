@@ -1,10 +1,11 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
-const healthRoutes = require('./routes/health.routes');
-const dbCheckRoutes = require('./routes/dbcheck.routes')
-const authRoutes = require('./routes/auth.routes')
-const productsRoutes = require('./routes/products.routes')
+const healthRoutes = require("./routes/health.routes");
+const dbCheckRoutes = require("./routes/dbcheck.routes");
+const authRoutes = require("./routes/auth.routes");
+const productsRoutes = require("./routes/products.routes");
+const ordersRoutes = require("./routes/orders.routes");
 
 const app = express();
 
@@ -12,10 +13,11 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/v1', healthRoutes);
-app.use('/api/v1', dbCheckRoutes);
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/products', productsRoutes)
+app.use("/api/v1", healthRoutes);
+app.use("/api/v1", dbCheckRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/products", productsRoutes);
+app.use("/api/v1/orders", ordersRoutes);
 
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
@@ -26,7 +28,7 @@ app.use((err, req, res, next) => {
 
 // 404
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+  res.status(404).json({ error: "Not Found" });
 });
 
 // Error handler
@@ -35,6 +37,5 @@ app.use((err, req, res, next) => {
   const status = err.status || 500;
   res.status(status).json({ error: err.message || "Internal Server Error" });
 });
-
 
 module.exports = app;

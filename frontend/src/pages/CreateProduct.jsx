@@ -48,12 +48,20 @@ export default function CreateProduct() {
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
         <label>
           Name
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Mate clásico" />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Mate clásico"
+          />
         </label>
 
         <label>
           Description
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional..." />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Optional..."
+          />
         </label>
 
         <label>
@@ -69,17 +77,30 @@ export default function CreateProduct() {
 
         <label>
           Currency
-          <input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={3} />
+          <input
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+            maxLength={3}
+          />
         </label>
 
         <label>
           Stock
-          <input value={stock} onChange={(e) => setStock(e.target.value)} type="number" min="0" />
+          <input
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+            type="number"
+            min="0"
+          />
         </label>
 
         <label>
           Image URL
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+          <input
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://..."
+          />
         </label>
 
         <button type="submit">Create</button>

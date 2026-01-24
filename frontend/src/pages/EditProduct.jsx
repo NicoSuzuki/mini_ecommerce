@@ -76,7 +76,13 @@ export default function EditProduct() {
 
   return (
     <div style={{ padding: 20, maxWidth: 520 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <h2 style={{ margin: 0 }}>Edit Product</h2>
         <Link to={`/products/${id}`}>View</Link>
       </div>
@@ -84,7 +90,10 @@ export default function EditProduct() {
       {err && <p style={{ color: "crimson" }}>{err}</p>}
       {ok && <p style={{ color: "green" }}>{ok}</p>}
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 10, marginTop: 12 }}>
+      <form
+        onSubmit={onSubmit}
+        style={{ display: "grid", gap: 10, marginTop: 12 }}
+      >
         <label>
           Name
           <input value={name} onChange={(e) => setName(e.target.value)} />
@@ -92,27 +101,47 @@ export default function EditProduct() {
 
         <label>
           Description
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </label>
 
         <label>
           Price (cents)
-          <input type="number" min="0" value={priceCents} onChange={(e) => setPriceCents(e.target.value)} />
+          <input
+            type="number"
+            min="0"
+            value={priceCents}
+            onChange={(e) => setPriceCents(e.target.value)}
+          />
         </label>
 
         <label>
           Currency
-          <input maxLength={3} value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
+          <input
+            maxLength={3}
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+          />
         </label>
 
         <label>
           Stock
-          <input type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} />
+          <input
+            type="number"
+            min="0"
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+          />
         </label>
 
         <label>
           Image URL
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+          <input
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+          />
         </label>
 
         <button type="submit">Save changes</button>

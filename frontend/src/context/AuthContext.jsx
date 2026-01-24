@@ -39,4 +39,3 @@ export function useAuth() {
   console.log("AuthContext value:", ctx);
   return ctx;
 }
-

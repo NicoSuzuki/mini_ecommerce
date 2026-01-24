@@ -6,9 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import { deleteProduct } from "../services/productsService";
 import { useNavigate } from "react-router-dom";
 
-
-
-
 export default function ProductDetail() {
   const { id } = useParams();
   const { addItem } = useCart();
@@ -59,25 +56,24 @@ export default function ProductDetail() {
       <Link to="/products">← Back to products</Link>
       {user?.role === "admin" && (
         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-            <Link to={`/admin/products/${product.id_product}/edit`}>Edit</Link>
-            <button
+          <Link to={`/admin/products/${product.id_product}/edit`}>Edit</Link>
+          <button
             onClick={async () => {
-                if (!confirm("Soft delete this product?")) return;
-                try {
+              if (!confirm("Soft delete this product?")) return;
+              try {
                 await deleteProduct(product.id_product);
                 alert("Product deleted (soft).");
                 navigate("/products");
-                } catch (e) {
+              } catch (e) {
                 alert(e.message);
-                }
+              }
             }}
-        style={{ background: "crimson", color: "white" }}
-        >
-        Delete
-        </button>
+            style={{ background: "crimson", color: "white" }}
+          >
+            Delete
+          </button>
         </div>
-        )}
-
+      )}
 
       <h2 style={{ marginTop: 12 }}>{product.name}</h2>
 
@@ -85,24 +81,32 @@ export default function ProductDetail() {
         <img
           src={product.image_url}
           alt={product.name}
-          style={{ width: "100%", maxWidth: 420, borderRadius: 8, border: "1px solid #ddd" }}
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            borderRadius: 8,
+            border: "1px solid #ddd",
+          }}
         />
       )}
 
       <p style={{ marginTop: 12 }}>{product.description || "No description"}</p>
 
       <div style={{ marginTop: 12 }}>
-        <div><strong>Price:</strong> {product.price_cents} {product.currency}</div>
-        <div><strong>Stock:</strong> {product.stock}</div>
+        <div>
+          <strong>Price:</strong> {product.price_cents} {product.currency}
+        </div>
+        <div>
+          <strong>Stock:</strong> {product.stock}
+        </div>
       </div>
       <button
         onClick={() => addItem(product, 1)}
         disabled={product.stock === 0}
         style={{ marginTop: 12 }}
-        >
+      >
         {product.stock === 0 ? "Out of stock" : "Add to cart"}
       </button>
-
     </div>
   );
 }

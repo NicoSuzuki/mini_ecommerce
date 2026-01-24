@@ -11,23 +11,34 @@ import Cart from "./pages/Cart";
 import { useCart } from "./context/CartContext";
 import EditProduct from "./pages/EditProduct";
 import DeletedProducts from "./pages/DeletedProducts";
-
+import Orders from "./pages/Orders";
+import OrderDetail from "./pages/OrderDetail";
 
 export default function App() {
-
   const { user } = useAuth();
   const { count } = useCart();
 
-
   return (
     <div>
-      <nav style={{ padding: 12, borderBottom: "1px solid #eee", display: "flex", gap: 12 }}>
+      <nav
+        style={{
+          padding: 12,
+          borderBottom: "1px solid #eee",
+          display: "flex",
+          gap: 12,
+        }}
+      >
         <Link to="/products">Products</Link>
         <Link to="/cart">Cart ({count})</Link>
+        {user && <Link to="/orders">My Orders</Link>}
         <Link to="/login">Login</Link>
         <Link to="/register">Register</Link>
-        {user?.role === "admin" && <Link to="/admin/products/new">New Product</Link>}
-        {user?.role === "admin" && <Link to="/admin/products/deleted">Trash</Link>}
+        {user?.role === "admin" && (
+          <Link to="/admin/products/new">New Product</Link>
+        )}
+        {user?.role === "admin" && (
+          <Link to="/admin/products/deleted">Trash</Link>
+        )}
       </nav>
 
       <Routes>
@@ -43,6 +54,8 @@ export default function App() {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/products" element={<Products />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route

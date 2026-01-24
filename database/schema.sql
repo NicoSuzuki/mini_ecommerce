@@ -47,3 +47,36 @@ CREATE TABLE IF NOT EXISTS users (
 -- Index
 CREATE INDEX idx_products_active ON products (is_active);
 CREATE INDEX idx_products_name ON products (name);
+
+-- 4) Orders
+CREATE TABLE IF NOT EXISTS orders (
+  id_order INT AUTO_INCREMENT PRIMARY KEY,
+  id_user INT NOT NULL,
+
+  total_cents INT NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'JPY',
+  status ENUM('created', 'paid', 'cancelled') NOT NULL DEFAULT 'created',
+
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  INDEX idx_orders_user (id_user),
+  CONSTRAINT fk_orders_user FOREIGN KEY (id_user) REFERENCES users(id_user)
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id_order_item INT AUTO_INCREMENT PRIMARY KEY,
+  id_order INT NOT NULL,
+  id_product INT NOT NULL,
+
+  product_name VARCHAR(255) NOT NULL,
+  price_cents INT NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'JPY',
+  quantity INT NOT NULL,
+
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_order_items_order (id_order),
+  CONSTRAINT fk_order_items_order FOREIGN KEY (id_order) REFERENCES orders(id_order),
+  CONSTRAINT fk_order_items_product FOREIGN KEY (id_product) REFERENCES products(id_product)
+);

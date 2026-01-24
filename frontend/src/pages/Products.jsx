@@ -25,7 +25,9 @@ export default function Products() {
         <h2 style={{ margin: 0 }}>Products</h2>
         {user && (
           <>
-            <span>Logged in as: {user.email} ({user.role})</span>
+            <span>
+              Logged in as: {user.email} ({user.role})
+            </span>
             <button onClick={logout}>Logout</button>
           </>
         )}
@@ -33,14 +35,28 @@ export default function Products() {
 
       {err && <p style={{ color: "crimson" }}>{err}</p>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginTop: 16 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: 12,
+          marginTop: 16,
+        }}
+      >
         {items.map((p) => (
-          <div key={p.id_product} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+          <div
+            key={p.id_product}
+            style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}
+          >
             <strong>
               <Link to={`/products/${p.id_product}`}>{p.name}</Link>
             </strong>
-            <p style={{ margin: "8px 0" }}>{p.description || "No description"}</p>
-            <div>Price: {p.price_cents} {p.currency}</div>
+            <p style={{ margin: "8px 0" }}>
+              {p.description || "No description"}
+            </p>
+            <div>
+              Price: {p.price_cents} {p.currency}
+            </div>
             <div>Stock: {p.stock}</div>
           </div>
         ))}
