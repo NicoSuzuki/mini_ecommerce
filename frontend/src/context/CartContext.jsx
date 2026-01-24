@@ -3,8 +3,13 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 const CartContext = createContext(null);
 
 function loadCart() {
-  const raw = localStorage.getItem("cart");
-  return raw ? JSON.parse(raw) : [];
+  try {
+    const raw = localStorage.getItem("cart");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 export function CartProvider({ children }) {
@@ -16,11 +21,14 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = (product, qty = 1) => {
+    const q = Number(qty);
+    if (!Number.isInteger(q) || q <= 0) return;
+
     setItems((prev) => {
       const existing = prev.find((x) => x.id_product === product.id_product);
       if (existing) {
         return prev.map((x) =>
-          x.id_product === product.id_product ? { ...x, qty: x.qty + qty } : x
+          x.id_product === product.id_product ? { ...x, qty: x.qty + q } : x,
         );
       }
       return [
@@ -31,7 +39,7 @@ export function CartProvider({ children }) {
           price_cents: product.price_cents,
           currency: product.currency,
           image_url: product.image_url || null,
-          qty,
+          qty: q,
         },
       ];
     });
@@ -45,7 +53,7 @@ export function CartProvider({ children }) {
     const q = Number(qty);
     if (!Number.isInteger(q) || q <= 0) return;
     setItems((prev) =>
-      prev.map((x) => (x.id_product === id_product ? { ...x, qty: q } : x))
+      prev.map((x) => (x.id_product === id_product ? { ...x, qty: q } : x)),
     );
   };
 
@@ -67,12 +75,14 @@ export function CartProvider({ children }) {
       total_cents,
       currency,
     }),
-    [items, count, total_cents, currency]
+    [items, count, total_cents, currency],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
-  return useContext(CartContext);
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error("useCart must be used within a CartProvider");
+  return ctx;
 }
