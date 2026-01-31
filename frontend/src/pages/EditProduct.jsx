@@ -45,7 +45,6 @@ export default function EditProduct() {
     setOk("");
 
     try {
-      // Armamos payload solo con campos válidos (puede incluir null)
       const payload = {
         name: name.trim(),
         description: description.trim() === "" ? null : description.trim(),

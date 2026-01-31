@@ -13,9 +13,15 @@ import EditProduct from "./pages/EditProduct";
 import DeletedProducts from "./pages/DeletedProducts";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminHome from "./pages/admin/AdminHome";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { count } = useCart();
 
   return (
@@ -31,13 +37,22 @@ export default function App() {
         <Link to="/products">Products</Link>
         <Link to="/cart">Cart ({count})</Link>
         {user && <Link to="/orders">My Orders</Link>}
-        <Link to="/login">Login</Link>
-        <Link to="/register">Register</Link>
+        {!user && <Link to="/login">Login</Link>}
+        {!user && <Link to="/register">Register</Link>}
+        {user?.role === "admin" && <Link to="/admin">Admin</Link>}
         {user?.role === "admin" && (
           <Link to="/admin/products/new">New Product</Link>
         )}
         {user?.role === "admin" && (
           <Link to="/admin/products/deleted">Trash</Link>
+        )}
+        {user && (
+          <>
+            <span>
+              Logged in as: {user.email} ({user.role})
+            </span>
+            <button onClick={logout}>Logout</button>
+          </>
         )}
       </nav>
 
@@ -58,6 +73,21 @@ export default function App() {
         <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminHome />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="orders/:id" element={<AdminOrderDetail />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="products" element={<AdminProducts />} />
+        </Route>
+
         <Route
           path="/admin/products/new"
           element={

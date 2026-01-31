@@ -14,3 +14,11 @@ export function fetchMyOrders(options) {
 export function fetchOrderById(id, options) {
   return apiRequest(`/orders/${id}`, options);
 }
+
+export function updateOrderStatus(id, status, options) {
+  return apiRequest(`/orders/${id}/status`, {
+    method: "PUT",
+    body: { status },
+    ...options,
+  });
+}

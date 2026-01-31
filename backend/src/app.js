@@ -6,6 +6,7 @@ const dbCheckRoutes = require("./routes/dbcheck.routes");
 const authRoutes = require("./routes/auth.routes");
 const productsRoutes = require("./routes/products.routes");
 const ordersRoutes = require("./routes/orders.routes");
+const adminOrdersRoutes = require("./routes/admin.orders.routes");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/v1", dbCheckRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/products", productsRoutes);
 app.use("/api/v1/orders", ordersRoutes);
+app.use("/api/v1/admin/orders", adminOrdersRoutes);
 
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {

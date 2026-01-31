@@ -103,7 +103,7 @@ exports.checkout = async (req, res) => {
     const [orderResult] = await connection.query(
       `INSERT INTO orders (id_user, total_cents, currency, status)
        VALUES (?, ?, ?, ?)`,
-      [req.user.sub, total_cents, currency || "JPY", "created"],
+      [req.user.sub, total_cents, currency || "JPY", "pending"],
     );
 
     const orderId = orderResult.insertId;

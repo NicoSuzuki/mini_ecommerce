@@ -23,14 +23,6 @@ export default function Products() {
     <div style={{ padding: 20 }}>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         <h2 style={{ margin: 0 }}>Products</h2>
-        {user && (
-          <>
-            <span>
-              Logged in as: {user.email} ({user.role})
-            </span>
-            <button onClick={logout}>Logout</button>
-          </>
-        )}
       </div>
 
       {err && <p style={{ color: "crimson" }}>{err}</p>}

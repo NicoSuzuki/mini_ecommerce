@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { fetchOrderById } from "../services/ordersService";
+import { fetchOrderById, updateOrderStatus } from "../services/ordersService";
+import { useAuth } from "../context/AuthContext";
 
 function formatJPY(value) {
   return new Intl.NumberFormat("ja-JP").format(value);
@@ -13,10 +14,14 @@ function formatMoney(amountCents, currency) {
 
 export default function OrderDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [statusError, setStatusError] = useState("");
 
   const controllerRef = useRef(null);
 
@@ -30,7 +35,9 @@ export default function OrderDetail() {
 
     try {
       const res = await fetchOrderById(id, { signal: controller.signal });
-      setOrder(res?.data || null);
+      const fetched = res?.data || null;
+      setOrder(fetched);
+      setSelectedStatus(fetched?.status || "");
     } catch (err) {
       if (err?.name === "AbortError") return;
       setError(err?.message || "Failed to load order");
@@ -93,7 +100,11 @@ export default function OrderDetail() {
           <div style={{ fontWeight: 700, fontSize: 18 }}>
             {formatMoney(order.total_cents, order.currency)}
           </div>
-          <button onClick={load} style={{ marginTop: 10, height: 34 }}>
+          <button
+            onClick={load}
+            disabled={statusUpdating}
+            style={{ marginTop: 10, height: 34 }}
+          >
             Refresh
           </button>
         </div>
