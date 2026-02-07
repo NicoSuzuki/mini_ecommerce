@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS orders (
 
   total_cents INT NOT NULL,
   currency CHAR(3) NOT NULL DEFAULT 'JPY',
-  status ENUM('created', 'paid', 'cancelled') NOT NULL DEFAULT 'created',
+  status ENUM('pending', 'paid', 'cancelled') NOT NULL DEFAULT 'pending',
 
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
