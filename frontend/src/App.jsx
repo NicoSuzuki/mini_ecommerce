@@ -40,12 +40,6 @@ export default function App() {
         {!user && <Link to="/login">Login</Link>}
         {!user && <Link to="/register">Register</Link>}
         {user?.role === "admin" && <Link to="/admin">Admin</Link>}
-        {user?.role === "admin" && (
-          <Link to="/admin/products/new">New Product</Link>
-        )}
-        {user?.role === "admin" && (
-          <Link to="/admin/products/deleted">Trash</Link>
-        )}
         {user && (
           <>
             <span>
