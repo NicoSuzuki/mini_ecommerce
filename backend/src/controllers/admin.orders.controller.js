@@ -66,29 +66,34 @@ exports.getById = async (req, res) => {
 };
 
 exports.updateStatus = async (req, res) => {
+  const orderId = Number(req.params.id);
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    return res.status(400).json({ error: "Invalid order id" });
+  }
+
+  const { status: nextStatus } = req.body;
+
+  const conn = await pool.getConnection();
   try {
-    const orderId = parseInt(req.params.id, 10);
-    if (!Number.isInteger(orderId) || orderId <= 0) {
-      return res.status(400).json({ error: "Invalid order id" });
-    }
+    await conn.beginTransaction();
 
-    const { status: nextStatus } = req.body;
-
-    const [rows] = await pool.query(
+    const [orderRows] = await conn.query(
       `SELECT id_order, status
        FROM orders
        WHERE id_order = ?
-       LIMIT 1`,
+       FOR UPDATE`,
       [orderId],
     );
 
-    if (rows.length === 0) {
+    if (orderRows.length === 0) {
+      await conn.rollback();
       return res.status(404).json({ error: "Order not found" });
     }
 
-    const currentStatus = rows[0].status;
+    const currentStatus = orderRows[0].status;
 
     if (currentStatus === nextStatus) {
+      await conn.commit();
       return res.status(200).json({
         message: "Status unchanged",
         data: { id_order: orderId, status: currentStatus },
@@ -97,28 +102,67 @@ exports.updateStatus = async (req, res) => {
 
     const allowedNext = TRANSITIONS[currentStatus];
     if (!allowedNext || !allowedNext.has(nextStatus)) {
+      await conn.rollback();
       return res.status(409).json({
         error: `Invalid status transition: ${currentStatus} -> ${nextStatus}`,
       });
     }
 
-    const [result] = await pool.query(
+    // If cancelling: restock items
+    if (currentStatus === "pending" && nextStatus === "cancelled") {
+      const [items] = await conn.query(
+        `SELECT id_product, quantity
+         FROM order_items
+         WHERE id_order = ?`,
+        [orderId],
+      );
+
+      if (items.length === 0) {
+        await conn.rollback();
+        return res.status(400).json({ error: "Order has no items" });
+      }
+
+      // lock involved products
+      const ids = [...new Set(items.map((i) => i.id_product))];
+      await conn.query(
+        `SELECT id_product
+         FROM products
+         WHERE id_product IN (?)
+         FOR UPDATE`,
+        [ids],
+      );
+
+      // restock
+      for (const it of items) {
+        const qty = Number(it.quantity);
+        await conn.query(
+          `UPDATE products
+           SET stock = stock + ?
+           WHERE id_product = ?`,
+          [qty, it.id_product],
+        );
+      }
+    }
+
+    // Update status
+    await conn.query(
       `UPDATE orders
        SET status = ?, updated_at = NOW()
        WHERE id_order = ?`,
       [nextStatus, orderId],
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+    await conn.commit();
 
     return res.status(200).json({
       message: "Status updated",
       data: { id_order: orderId, status: nextStatus },
     });
   } catch (err) {
+    await conn.rollback();
     console.error("Admin update status error:", err);
     return res.status(500).json({ error: "Failed to update status" });
+  } finally {
+    conn.release();
   }
 };
