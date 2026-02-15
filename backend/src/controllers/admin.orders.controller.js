@@ -1,6 +1,10 @@
 const pool = require("../../db/pool");
 
-const ALLOWED = ["pending", "paid", "cancelled"];
+const TRANSITIONS = {
+  pending: new Set(["paid", "cancelled"]),
+  paid: new Set([]),
+  cancelled: new Set([]),
+};
 
 exports.list = async (req, res) => {
   try {
@@ -68,24 +72,51 @@ exports.updateStatus = async (req, res) => {
       return res.status(400).json({ error: "Invalid order id" });
     }
 
-    const { status } = req.body;
-    if (!ALLOWED.includes(status)) {
-      return res
-        .status(400)
-        .json({ error: `Invalid status. Allowed: ${ALLOWED.join(", ")}` });
+    const { status: nextStatus } = req.body;
+
+    const [rows] = await pool.query(
+      `SELECT id_order, status
+       FROM orders
+       WHERE id_order = ?
+       LIMIT 1`,
+      [orderId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const currentStatus = rows[0].status;
+
+    if (currentStatus === nextStatus) {
+      return res.status(200).json({
+        message: "Status unchanged",
+        data: { id_order: orderId, status: currentStatus },
+      });
+    }
+
+    const allowedNext = TRANSITIONS[currentStatus];
+    if (!allowedNext || !allowedNext.has(nextStatus)) {
+      return res.status(409).json({
+        error: `Invalid status transition: ${currentStatus} -> ${nextStatus}`,
+      });
     }
 
     const [result] = await pool.query(
-      `UPDATE orders SET status = ?, updated_at = NOW() WHERE id_order = ?`,
-      [status, orderId],
+      `UPDATE orders
+       SET status = ?, updated_at = NOW()
+       WHERE id_order = ?`,
+      [nextStatus, orderId],
     );
 
-    if (result.affectedRows === 0)
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Order not found" });
+    }
 
-    return res
-      .status(200)
-      .json({ message: "Status updated", data: { id_order: orderId, status } });
+    return res.status(200).json({
+      message: "Status updated",
+      data: { id_order: orderId, status: nextStatus },
+    });
   } catch (err) {
     console.error("Admin update status error:", err);
     return res.status(500).json({ error: "Failed to update status" });

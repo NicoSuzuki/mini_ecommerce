@@ -118,10 +118,15 @@ exports.checkout = async (req, res) => {
     );
 
     for (const item of normalized) {
-      await connection.query(
-        "UPDATE products SET stock = stock - ? WHERE id_product = ?",
-        [item.qty, item.id_product],
+      const [u] = await connection.query(
+        "UPDATE products SET stock = stock - ? WHERE id_product = ? AND stock >= ?",
+        [item.qty, item.id_product, item.qty],
       );
+
+      if (u.affectedRows === 0) {
+        await connection.rollback();
+        return res.status(409).json({ error: "Insufficient stock" });
+      }
     }
 
     await connection.commit();
