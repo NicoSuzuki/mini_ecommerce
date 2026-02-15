@@ -30,10 +30,6 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/*export function useAuth() {
-  return useContext(AuthContext);
-}*/
-
 export function useAuth() {
   const ctx = useContext(AuthContext);
   console.log("AuthContext value:", ctx);

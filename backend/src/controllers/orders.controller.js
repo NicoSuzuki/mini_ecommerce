@@ -236,3 +236,97 @@ exports.getOrderById = async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch order" });
   }
 };
+
+exports.cancelMyOrder = async (req, res) => {
+  const orderId = Number(req.params.id);
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    return res.status(400).json({ error: "Invalid order id" });
+  }
+
+  const userId = req.user?.sub;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Lock the order row AND ensure it's the user's order
+    const [orderRows] = await conn.query(
+      `SELECT id_order, id_user, status
+       FROM orders
+       WHERE id_order = ? AND id_user = ?
+       FOR UPDATE`,
+      [orderId, userId],
+    );
+
+    if (orderRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const order = orderRows[0];
+
+    if (order.status !== "pending") {
+      await conn.rollback();
+      return res.status(409).json({
+        error: `Only pending orders can be cancelled (current: ${order.status})`,
+      });
+    }
+
+    // Load items
+    const [items] = await conn.query(
+      `SELECT id_product, quantity
+       FROM order_items
+       WHERE id_order = ?`,
+      [orderId],
+    );
+
+    if (items.length === 0) {
+      await conn.rollback();
+      return res.status(400).json({ error: "Order has no items" });
+    }
+
+    // Lock products
+    const ids = [...new Set(items.map((i) => i.id_product))];
+    await conn.query(
+      `SELECT id_product
+       FROM products
+       WHERE id_product IN (?)
+       FOR UPDATE`,
+      [ids],
+    );
+
+    // Restock
+    for (const it of items) {
+      await conn.query(
+        `UPDATE products
+         SET stock = stock + ?
+         WHERE id_product = ?`,
+        [Number(it.quantity), it.id_product],
+      );
+    }
+
+    // Update order status
+    await conn.query(
+      `UPDATE orders
+       SET status = 'cancelled', updated_at = NOW()
+       WHERE id_order = ?`,
+      [orderId],
+    );
+
+    await conn.commit();
+
+    return res.status(200).json({
+      message: "Order cancelled",
+      data: { id_order: orderId, status: "cancelled" },
+    });
+  } catch (err) {
+    await conn.rollback();
+    console.error("Cancel order error:", err);
+    return res.status(500).json({ error: "Failed to cancel order" });
+  } finally {
+    conn.release();
+  }
+};

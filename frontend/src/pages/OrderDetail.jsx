@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { fetchOrderById, updateOrderStatus } from "../services/ordersService";
+import { cancelMyOrder, fetchOrderById } from "../services/ordersService";
 import { useAuth } from "../context/AuthContext";
 
 function formatJPY(value) {
@@ -19,9 +19,8 @@ export default function OrderDetail() {
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [statusUpdating, setStatusUpdating] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [statusError, setStatusError] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   const controllerRef = useRef(null);
 
@@ -37,7 +36,6 @@ export default function OrderDetail() {
       const res = await fetchOrderById(id, { signal: controller.signal });
       const fetched = res?.data || null;
       setOrder(fetched);
-      setSelectedStatus(fetched?.status || "");
     } catch (err) {
       if (err?.name === "AbortError") return;
       setError(err?.message || "Failed to load order");
@@ -50,6 +48,27 @@ export default function OrderDetail() {
     load();
     return () => controllerRef.current?.abort();
   }, [id]);
+
+  const handleCancel = async () => {
+    if (!order) return;
+
+    const ok = window.confirm(
+      `Cancel Order #${order.id_order}? This will restock items.`,
+    );
+    if (!ok) return;
+
+    setCancelError("");
+    setCancelLoading(true);
+
+    try {
+      await cancelMyOrder(order.id_order);
+      await load();
+    } catch (err) {
+      setCancelError(err?.message || "Failed to cancel order");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   if (loading) return <div style={{ padding: 20 }}>Loading order...</div>;
 
@@ -100,13 +119,29 @@ export default function OrderDetail() {
           <div style={{ fontWeight: 700, fontSize: 18 }}>
             {formatMoney(order.total_cents, order.currency)}
           </div>
+
           <button
             onClick={load}
-            disabled={statusUpdating}
+            disabled={cancelLoading}
             style={{ marginTop: 10, height: 34 }}
           >
             Refresh
           </button>
+          {cancelError && (
+            <div style={{ marginTop: 10, color: "#b91c1c" }}>{cancelError}</div>
+          )}
+
+          {user &&
+            order.id_user === user.id_user &&
+            order.status === "pending" && (
+              <button
+                onClick={handleCancel}
+                disabled={cancelLoading}
+                style={{ marginTop: 10, height: 34 }}
+              >
+                {cancelLoading ? "Cancelling..." : "Cancel order"}
+              </button>
+            )}
         </div>
       </div>
 

@@ -22,3 +22,10 @@ export function updateOrderStatus(id, status, options) {
     ...options,
   });
 }
+
+export function cancelMyOrder(id_order, options) {
+  return apiRequest(`/orders/${id_order}/cancel`, {
+    method: "POST",
+    ...options,
+  });
+}
