@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 
 const healthRoutes = require("./routes/health.routes");
 const dbCheckRoutes = require("./routes/dbcheck.routes");
@@ -11,7 +12,17 @@ const adminUsersRoutes = require("./routes/admin.users.routes");
 
 const app = express();
 
-app.use(cors());
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  }),
+);
+app.use(helmet());
 app.use(express.json());
 
 // Routes
