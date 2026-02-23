@@ -75,8 +75,9 @@ exports.createProduct = async (req, res) => {
       price_cents,
       currency = "JPY",
       stock,
-      image_url = null,
     } = req.body;
+
+    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return res.status(400).json({ error: "Name is required" });
