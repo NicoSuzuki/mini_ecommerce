@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { getProductById } from "../services/productsService";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { deleteProduct } from "../services/productsService";
 import { useNavigate } from "react-router-dom";
 
 export default function ProductDetail() {
@@ -15,6 +14,16 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+
+    if (url.startsWith("/uploads/")) return url;
+
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+    return url.startsWith("/") ? url : `/${url}`;
+  }
 
   useEffect(() => {
     (async () => {
@@ -57,18 +66,13 @@ export default function ProductDetail() {
 
       <h2 style={{ marginTop: 12 }}>{product.name}</h2>
 
-      {product.image_url && (
+      {product.image_url ? (
         <img
-          src={product.image_url}
+          src={resolveImageUrl(product.image_url)}
           alt={product.name}
-          style={{
-            width: "100%",
-            maxWidth: 420,
-            borderRadius: 8,
-            border: "1px solid #ddd",
-          }}
+          style={{ width: 240, borderRadius: 12 }}
         />
-      )}
+      ) : null}
 
       <p style={{ marginTop: 12 }}>{product.description || "No description"}</p>
 

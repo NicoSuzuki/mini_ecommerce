@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const path = require("path");
 
 const healthRoutes = require("./routes/health.routes");
 const dbCheckRoutes = require("./routes/dbcheck.routes");
@@ -25,6 +26,7 @@ app.use(
 );
 app.use(helmet());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Routes
 app.use("/api/v1", healthRoutes);
