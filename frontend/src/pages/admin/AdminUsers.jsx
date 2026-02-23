@@ -61,9 +61,7 @@ export default function AdminUsers() {
         }}
       >
         <h2 style={{ margin: 0 }}>Users</h2>
-        <button onClick={load} style={{ height: 36 }}>
-          Refresh
-        </button>
+        <button onClick={load}>Refresh</button>
       </div>
 
       {error && <div style={{ marginTop: 12, color: "#b91c1c" }}>{error}</div>}

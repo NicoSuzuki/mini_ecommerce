@@ -54,26 +54,6 @@ export default function ProductDetail() {
   return (
     <div style={{ padding: 20, maxWidth: 720 }}>
       <Link to="/products">← Back to products</Link>
-      {user?.role === "admin" && (
-        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-          <Link to={`/admin/products/${product.id_product}/edit`}>Edit</Link>
-          <button
-            onClick={async () => {
-              if (!confirm("Soft delete this product?")) return;
-              try {
-                await deleteProduct(product.id_product);
-                alert("Product deleted (soft).");
-                navigate("/products");
-              } catch (e) {
-                alert(e.message);
-              }
-            }}
-            style={{ background: "crimson", color: "white" }}
-          >
-            Delete
-          </button>
-        </div>
-      )}
 
       <h2 style={{ marginTop: 12 }}>{product.name}</h2>
 

@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../services/productsService";
-import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function Products() {
-  const { user, logout } = useAuth();
   const [items, setItems] = useState([]);
   const [err, setErr] = useState("");
 

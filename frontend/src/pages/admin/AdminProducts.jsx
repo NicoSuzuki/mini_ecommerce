@@ -7,6 +7,7 @@ import {
   deleteProduct,
   restoreProduct,
 } from "../../services/productsService";
+import { uploadProductImage } from "../../services/uploadService";
 
 function formatJPY(value) {
   return new Intl.NumberFormat("ja-JP").format(value);
@@ -27,6 +28,14 @@ const EMPTY_FORM = {
   image_url: "",
 };
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || "";
+
+function resolveImageUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${API_ORIGIN}${url}`;
+}
+
 export default function AdminProducts() {
   const [tab, setTab] = useState("active");
   const [products, setProducts] = useState([]);
@@ -34,6 +43,14 @@ export default function AdminProducts() {
   const [error, setError] = useState("");
 
   const [form, setForm] = useState(EMPTY_FORM);
+
+  // upload state
+  const [file, setFile] = useState(null);
+  const [localPreview, setLocalPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  // save state
   const [saving, setSaving] = useState(false);
 
   const [rowBusy, setRowBusy] = useState({});
@@ -51,7 +68,6 @@ export default function AdminProducts() {
         tab === "active"
           ? await getProducts({ signal: controller.signal })
           : await getDeletedProducts({ signal: controller.signal });
-
       setProducts(res?.data || []);
     } catch (err) {
       if (err?.name === "AbortError") return;
@@ -66,9 +82,23 @@ export default function AdminProducts() {
     return () => controllerRef.current?.abort();
   }, [tab]);
 
-  const startCreate = () => setForm(EMPTY_FORM);
+  useEffect(() => {
+    if (!file) {
+      setLocalPreview("");
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setLocalPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
-  const startEdit = (p) =>
+  const startCreate = () => {
+    setForm(EMPTY_FORM);
+    setFile(null);
+    setUploadError("");
+  };
+
+  const startEdit = (p) => {
     setForm({
       id_product: p.id_product,
       name: p.name || "",
@@ -78,6 +108,9 @@ export default function AdminProducts() {
       stock: String(p.stock ?? ""),
       image_url: p.image_url || "",
     });
+    setFile(null);
+    setUploadError("");
+  };
 
   const validateForm = () => {
     if (!form.name.trim()) return "Name is required";
@@ -90,6 +123,29 @@ export default function AdminProducts() {
     const cur = (form.currency || "").trim().toUpperCase();
     if (cur.length !== 3) return "currency must be a 3-letter code (e.g., JPY)";
     return "";
+  };
+
+  // Upload photo
+  const handleUpload = async () => {
+    if (!file) {
+      setUploadError("Please choose an image first.");
+      return;
+    }
+
+    setUploadError("");
+    setUploading(true);
+    try {
+      const res = await uploadProductImage(file);
+      const url = res?.data?.image_url;
+      if (!url) throw new Error("Upload did not return image_url");
+
+      setForm((p) => ({ ...p, image_url: url }));
+      setFile(null);
+    } catch (err) {
+      setUploadError(err?.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const onSubmit = async (e) => {
@@ -165,9 +221,7 @@ export default function AdminProducts() {
         }}
       >
         <h2 style={{ margin: 0 }}>Products</h2>
-        <button onClick={load} style={{ height: 36 }}>
-          Refresh
-        </button>
+        <button onClick={load}>Refresh</button>
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
@@ -209,11 +263,16 @@ export default function AdminProducts() {
                 ? `Edit product #${form.id_product}`
                 : "Create product"}
             </strong>
-            <button type="button" onClick={startCreate} disabled={saving}>
+            <button
+              type="button"
+              onClick={startCreate}
+              disabled={saving || uploading}
+            >
               New
             </button>
           </div>
 
+          {/* Main fields */}
           <div
             style={{
               display: "grid",
@@ -250,6 +309,7 @@ export default function AdminProducts() {
             />
           </div>
 
+          {/* Description + image_url */}
           <div
             style={{
               display: "grid",
@@ -274,14 +334,68 @@ export default function AdminProducts() {
             />
           </div>
 
+          {/* Upload */}
+          <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                disabled={uploading || saving}
+              />
+              <button
+                type="button"
+                onClick={handleUpload}
+                disabled={uploading || saving || !file}
+              >
+                {uploading ? "Uploading..." : "Upload image"}
+              </button>
+              {form.image_url ? (
+                <span style={{ fontSize: 12, color: "#6b7280" }}>
+                  {form.image_url}
+                </span>
+              ) : (
+                <span style={{ fontSize: 12, color: "#6b7280" }}>
+                  No image uploaded
+                </span>
+              )}
+            </div>
+
+            {uploadError && (
+              <div style={{ color: "#b91c1c" }}>{uploadError}</div>
+            )}
+
+            {/* Preview */}
+            {localPreview && (
+              <img
+                src={localPreview}
+                alt="local preview"
+                style={{
+                  width: 120,
+                  height: 120,
+                  objectFit: "cover",
+                  borderRadius: 12,
+                }}
+              />
+            )}
+          </div>
+
           <div style={{ marginTop: 10 }}>
-            <button type="submit" disabled={saving}>
+            <button type="submit" disabled={saving || uploading}>
               {saving ? "Saving..." : form.id_product ? "Update" : "Create"}
             </button>
           </div>
         </form>
       )}
 
+      {/* List */}
       {loading ? (
         <div style={{ marginTop: 12 }}>Loading products...</div>
       ) : products.length === 0 ? (
@@ -318,7 +432,7 @@ export default function AdminProducts() {
                         <button
                           type="button"
                           onClick={() => startEdit(p)}
-                          disabled={saving}
+                          disabled={saving || uploading}
                         >
                           Edit
                         </button>

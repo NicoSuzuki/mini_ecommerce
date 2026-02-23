@@ -92,9 +92,7 @@ export default function AdminOrders() {
             ))}
           </select>
 
-          <button onClick={load} style={{ height: 36 }}>
-            Refresh
-          </button>
+          <button onClick={load}>Refresh</button>
         </div>
       </div>
 
