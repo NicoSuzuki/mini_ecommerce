@@ -43,40 +43,5 @@ export default function Products() {
         </div>
       </div>
     </div>
-
-    /*<div style={{ padding: 20 }}>
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <h2 style={{ margin: 0 }}>Products</h2>
-      </div>
-
-      {err && <p style={{ color: "crimson" }}>{err}</p>}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 12,
-          marginTop: 16,
-        }}
-      >
-        {items.map((p) => (
-          <div
-            key={p.id_product}
-            style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}
-          >
-            <strong>
-              <Link to={`/products/${p.id_product}`}>{p.name}</Link>
-            </strong>
-            <p style={{ margin: "8px 0" }}>
-              {p.description || "No description"}
-            </p>
-            <div>
-              Price: {p.price_cents} {p.currency}
-            </div>
-            <div>Stock: {p.stock}</div>
-          </div>
-        ))}
-      </div>
-    </div>*/
   );
 }

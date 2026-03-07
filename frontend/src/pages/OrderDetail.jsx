@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { cancelMyOrder, fetchOrderById } from "../services/ordersService";
-import { useAuth } from "../context/AuthContext";
 
 function formatJPY(value) {
   return new Intl.NumberFormat("ja-JP").format(value);
@@ -12,13 +11,22 @@ function formatMoney(amountCents, currency) {
   return `${amountCents} ${currency}`;
 }
 
+function statusBadge(status) {
+  const base =
+    "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold";
+  if (status === "paid") return `${base} bg-emerald-100 text-emerald-700`;
+  if (status === "pending") return `${base} bg-amber-100 text-amber-700`;
+  if (status === "cancelled") return `${base} bg-red-100 text-red-700`;
+  return `${base} bg-slate-100 text-slate-700`;
+}
+
 export default function OrderDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
 
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelError, setCancelError] = useState("");
 
@@ -34,8 +42,7 @@ export default function OrderDetail() {
 
     try {
       const res = await fetchOrderById(id, { signal: controller.signal });
-      const fetched = res?.data || null;
-      setOrder(fetched);
+      setOrder(res?.data || null);
     } catch (err) {
       if (err?.name === "AbortError") return;
       setError(err?.message || "Failed to load order");
@@ -47,6 +54,7 @@ export default function OrderDetail() {
   useEffect(() => {
     load();
     return () => controllerRef.current?.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleCancel = async () => {
@@ -59,7 +67,6 @@ export default function OrderDetail() {
 
     setCancelError("");
     setCancelLoading(true);
-
     try {
       await cancelMyOrder(order.id_order);
       await load();
@@ -70,115 +77,182 @@ export default function OrderDetail() {
     }
   };
 
-  if (loading) return <div style={{ padding: 20 }}>Loading order...</div>;
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="h-6 w-40 animate-pulse rounded bg-slate-100" />
+          <div className="mt-4 h-4 w-64 animate-pulse rounded bg-slate-100" />
+          <div className="mt-6 grid gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200 bg-white p-4"
+              >
+                <div className="h-4 w-52 animate-pulse rounded bg-slate-100" />
+                <div className="mt-2 h-4 w-40 animate-pulse rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <div style={{ padding: 20 }}>
-        <p style={{ color: "#b91c1c" }}>{error}</p>
-        <Link to="/orders">← Back to orders</Link>
+      <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
+          <p className="font-semibold">{error}</p>
+          <Link
+            to="/orders"
+            className="mt-3 inline-block text-sm font-semibold text-slate-900 underline underline-offset-4"
+          >
+            ← Back to orders
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div style={{ padding: 20 }}>
-        <p>Order not found.</p>
-        <Link to="/orders">← Back to orders</Link>
+      <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <p className="text-slate-700">Order not found.</p>
+          <Link
+            to="/orders"
+            className="mt-3 inline-block text-sm font-semibold text-slate-900 underline underline-offset-4"
+          >
+            ← Back to orders
+          </Link>
+        </div>
       </div>
     );
   }
 
   const items = order.items || [];
+  const canCancel = order.status === "pending";
 
   return (
-    <div style={{ padding: 20, maxWidth: 900 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <Link to="/orders">← Back to orders</Link>
-          <h2 style={{ margin: "10px 0 0" }}>Order #{order.id_order}</h2>
-          <div style={{ marginTop: 4, fontSize: 14, color: "#555" }}>
-            {order.created_at
-              ? new Date(order.created_at).toLocaleString("ja-JP")
-              : ""}
-          </div>
-          <div style={{ marginTop: 4, color: "#6b7280" }}>
-            Status: <strong>{order.status}</strong>
-          </div>
-        </div>
+    <div className="mx-auto max-w-5xl px-4 py-6">
+      <div className="mb-4">
+        <Link
+          to="/orders"
+          className="text-sm font-semibold text-slate-700 hover:text-slate-900"
+        >
+          ← Back to orders
+        </Link>
+      </div>
 
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 14, color: "#6b7280" }}>Total</div>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>
-            {formatMoney(order.total_cents, order.currency)}
+      {/* Header card */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+                Order #{order.id_order}
+              </h1>
+              <span className={statusBadge(order.status)}>{order.status}</span>
+            </div>
+
+            <p className="mt-2 text-sm text-slate-600">
+              {order.created_at
+                ? new Date(order.created_at).toLocaleString("ja-JP")
+                : ""}
+            </p>
           </div>
 
-          <button
-            onClick={load}
-            disabled={cancelLoading}
-            style={{ marginTop: 10, height: 34 }}
-          >
-            Refresh
-          </button>
-          {cancelError && (
-            <div style={{ marginTop: 10, color: "#b91c1c" }}>{cancelError}</div>
-          )}
+          <div className="text-right">
+            <div className="text-xs font-semibold text-slate-500">Total</div>
+            <div className="mt-1 text-2xl font-black text-slate-900">
+              {formatMoney(order.total_cents, order.currency)}
+            </div>
 
-          {user &&
-            order.id_user === user.id_user &&
-            order.status === "pending" && (
+            <div className="mt-3 flex flex-wrap justify-end gap-2">
               <button
-                onClick={handleCancel}
-                disabled={cancelLoading}
-                style={{ marginTop: 10, height: 34 }}
+                onClick={load}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
               >
-                {cancelLoading ? "Cancelling..." : "Cancel order"}
+                Refresh
               </button>
+
+              {canCancel && (
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelLoading}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {cancelLoading ? "Cancelling..." : "Cancel order"}
+                </button>
+              )}
+            </div>
+
+            {cancelError && (
+              <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {cancelError}
+              </div>
             )}
+          </div>
         </div>
       </div>
 
-      <hr style={{ margin: "16px 0" }} />
+      {/* Items */}
+      <div className="mt-6">
+        <h2 className="text-lg font-bold text-slate-900">
+          Items{" "}
+          <span className="text-sm font-semibold text-slate-500">
+            ({items.length})
+          </span>
+        </h2>
 
-      <h3 style={{ margin: "0 0 10px" }}>Items</h3>
-      <div style={{ display: "grid", gap: 10 }}>
-        {items.map((item, idx) => (
-          <div
-            key={`${order.id_order}-${item.id_product}-${idx}`}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              padding: 12,
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            <div>
-              <strong>{item.product_name}</strong>
-              <div style={{ color: "#6b7280", marginTop: 4 }}>
-                Qty: {item.quantity}
-              </div>
-              <div style={{ color: "#6b7280", marginTop: 4 }}>
-                Unit: {formatMoney(item.price_cents, item.currency)}
+        <div className="mt-3 grid gap-3">
+          {items.map((item, idx) => (
+            <div
+              key={`${order.id_order}-${item.id_product}-${idx}`}
+              className="rounded-2xl border border-slate-200 bg-white p-4"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="truncate text-base font-semibold text-slate-900">
+                    {item.product_name}
+                  </div>
+                  <div className="mt-1 text-sm text-slate-600">
+                    Qty: <span className="font-semibold">{item.quantity}</span>
+                    <span className="mx-2 text-slate-300">•</span>
+                    Unit:{" "}
+                    <span className="font-semibold text-slate-900">
+                      {formatMoney(item.price_cents, item.currency)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-xs font-semibold text-slate-500">
+                    Line total
+                  </div>
+                  <div className="text-lg font-extrabold text-slate-900">
+                    {formatMoney(
+                      item.price_cents * item.quantity,
+                      item.currency,
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
+          ))}
 
-            <div style={{ textAlign: "right" }}>
-              <div style={{ color: "#6b7280" }}>Line total</div>
-              <div style={{ fontWeight: 600 }}>
-                {formatMoney(item.price_cents * item.quantity, item.currency)}
-              </div>
+          {items.length === 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-700">
+              No items found for this order.
             </div>
-          </div>
-        ))}
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-6 text-xs text-slate-500">
+        Status updates reflect your latest order state.
       </div>
     </div>
   );
